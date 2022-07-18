@@ -36,28 +36,3 @@
       };
     });
 }
-#    flake-utils.lib.eachDefaultSystem
-#      (system:
-#        let pkgs = nixpkgs.legacyPackages.${system}; in
-#        {
-#          devShell = with pkgs; mkShell {
-#            buildInputs = [
-#                rustc
-#                cargo
-#                rustfmt
-#                clippy
-#                rust-analyzer
-#
-#                # WINIT_UNIX_BACKEND=x11
-#                xorg.libXcursor
-#                xorg.libXrandr
-#                xorg.libXi
-#                xorg.libX11
-#            ];
-#            LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
-#            shellHook = ''
-#                export PS1="$PS1\[\033[38;2;211;134;155m\]:nix:\[\033[0m\] "
-#            '';
-#          };
-#        }
-#      );
