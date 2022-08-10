@@ -118,27 +118,23 @@
         let lightPosition = [0.0, 0.0, 5.0];
         let radians = 0.0;
         const radiansOffset = 0.05;
-        const lightPositionLocation = gl.getUniformLocation(pipeline.shaderProgram, "uLightPosition");
-        gl.uniform3fv(lightPositionLocation, lightPosition);
 
         let coeffs = [5.0, 5.0, 5.0, 0.25];
         const coeffsLimits = { lower: -30.0, upper: 30.0 };
         let coeffsFactors = { x: 1.0, y: -1.0, offset: 0.1 };
-        const coeffsLocation = gl.getUniformLocation(pipeline.shaderProgram, "uCoeffs");
-        gl.uniform4fv(coeffsLocation, coeffs);
 
         const backgroundColor = [1.0, 0.97, 0.06, 1.0];
-        const backgroundColorLocation = gl.getUniformLocation(pipeline.shaderProgram, "uBackgroundColor");
-        gl.uniform4fv(backgroundColorLocation, backgroundColor);
-
         const sphereColor = [0.06, 0.92, 1.0];
-        const sphereColorLocation = gl.getUniformLocation(pipeline.shaderProgram, "uSphereColor");
-        gl.uniform3fv(sphereColorLocation, sphereColor);
+
+        const setSphereColor = bindUniform3fv(pipeline, "uSphereColor", sphereColor);
+        const setLightPosition = bindUniform3fv(pipeline, "uLightPosition", lightPosition);
+        const setCoeffs = bindUniform4fv(pipeline, "uCoeffs", coeffs);
+        const setBackgroundColor = bindUniform4fv(pipeline, "uBackgroundColor", backgroundColor);
 
         function step() {
             lightPosition[0] = 10.0 * Math.cos(radians);
             lightPosition[1] = 10.0 * Math.sin(radians);
-            gl.uniform3fv(lightPositionLocation, lightPosition);
+            setLightPosition(lightPosition);
 
             radians += radiansOffset;
             radians %= 2.0 * Math.PI;
@@ -151,7 +147,7 @@
             if (coeffs[1] < coeffsLimits.lower || coeffs[1] > coeffsLimits.upper) {
                 coeffsFactors.y *= -1.0;
             }
-            gl.uniform4fv(coeffsLocation, coeffs);
+            setCoeffs(coeffs);
         }
 
         window.addEventListener('resize', () => {

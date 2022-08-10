@@ -124,6 +124,7 @@ function createPipeline(gl, vertexShaderSource, fragmentShaderSource, onError) {
     const program = compileShaders(gl, vertexShaderSource, fragmentShaderSource, onError);
 
     return {
+        gl: gl,
         vertexArray: createAndBindVertexArray(gl),
         vertexBuffer: createAndBindVertexBuffer(gl, program, getScreenRectVertices()),
         shaderProgram: program,
@@ -137,4 +138,16 @@ function render(callback) {
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     window.requestAnimationFrame(() => render(callback));
+}
+
+function bindUniform3fv(pipeline, name, value) {
+    const location = gl.getUniformLocation(pipeline.shaderProgram, name);
+    pipeline.gl.uniform3fv(location, value);
+    return (newValue) => pipeline.gl.uniform3fv(location, newValue);
+}
+
+function bindUniform4fv(pipeline, name, value) {
+    const location = gl.getUniformLocation(pipeline.shaderProgram, name);
+    pipeline.gl.uniform4fv(location, value);
+    return (newValue) => pipeline.gl.uniform4fv(location, newValue);
 }
