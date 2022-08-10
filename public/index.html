@@ -167,6 +167,15 @@
             return program;
         }
 
+        function createAndBindVertexBuffer(gl, program, vertices) {
+            const vertexBuffer = gl.createBuffer();
+            const positionCoord = gl.getAttribLocation(program, "position");
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+            gl.vertexAttribPointer(positionCoord, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(positionCoord);
+        }
+
         const gl = createWebGL2Context('webgl2_surface', { antialias: true });
 
         if (!gl) {
@@ -182,13 +191,7 @@
 
         const screenArray = gl.createVertexArray();
         gl.bindVertexArray(screenArray);
-
-        const vertexBuffer = gl.createBuffer();
-        const positionCoord = gl.getAttribLocation(program, "position");
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-        gl.vertexAttribPointer(positionCoord, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(positionCoord);
+        createAndBindVertexBuffer(gl, program, vertices);
 
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
