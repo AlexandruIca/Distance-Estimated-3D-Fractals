@@ -70,7 +70,25 @@ function onResize(gl, canvas, vertexBuffer) {
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, newScreenRect, 0, newScreenRect.length);
 }
 
-function createPipeline(gl, vertexShaderSource, fragmentShaderSource, onError) {
+function createAndBindVertexArray(gl) {
+    const vertexArray = gl.createVertexArray();
+    gl.bindVertexArray(vertexArray);
+
+    return vertexArray;
+}
+
+function createAndBindVertexBuffer(gl, program, vertices) {
+    const vertexBuffer = gl.createBuffer();
+    const positionCoord = gl.getAttribLocation(program, "position");
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(positionCoord, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionCoord);
+
+    return vertexBuffer;
+}
+
+function compileShaders(gl, vertexShaderSource, fragmentShaderSource, onError) {
     const vertShader = gl.createShader(gl.VERTEX_SHADER);
     const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
 
@@ -97,18 +115,19 @@ function createPipeline(gl, vertexShaderSource, fragmentShaderSource, onError) {
         onError(gl.getProgramInfoLog(program));
     }
 
+    gl.useProgram(program);
+
     return program;
 }
 
-function createAndBindVertexBuffer(gl, program, vertices) {
-    const vertexBuffer = gl.createBuffer();
-    const positionCoord = gl.getAttribLocation(program, "position");
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    gl.vertexAttribPointer(positionCoord, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(positionCoord);
+function createPipeline(gl, vertexShaderSource, fragmentShaderSource, onError) {
+    const program = compileShaders(gl, vertexShaderSource, fragmentShaderSource, onError);
 
-    return vertexBuffer;
+    return {
+        vertexArray: createAndBindVertexArray(gl),
+        vertexBuffer: createAndBindVertexBuffer(gl, program, getScreenRectVertices()),
+        shaderProgram: program,
+    };
 }
 
 function render(callback) {

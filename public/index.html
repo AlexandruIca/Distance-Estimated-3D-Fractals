@@ -113,33 +113,26 @@
 
         const canvas = document.getElementById('webgl2_surface');
         const gl = createWebGL2Context(canvas, { antialias: true }, console.error);
-
-        const program = createPipeline(gl, defaultVertexShader, fragmentShader, console.error);
-        gl.useProgram(program);
-
-        const screenArray = gl.createVertexArray();
-        gl.bindVertexArray(screenArray);
-
-        const vertexBuffer = createAndBindVertexBuffer(gl, program, getScreenRectVertices());
+        const pipeline = createPipeline(gl, defaultVertexShader, fragmentShader, console.error);
 
         let lightPosition = [0.0, 0.0, 5.0];
         let radians = 0.0;
         const radiansOffset = 0.05;
-        const lightPositionLocation = gl.getUniformLocation(program, "uLightPosition");
+        const lightPositionLocation = gl.getUniformLocation(pipeline.shaderProgram, "uLightPosition");
         gl.uniform3fv(lightPositionLocation, lightPosition);
 
         let coeffs = [5.0, 5.0, 5.0, 0.25];
         const coeffsLimits = { lower: -30.0, upper: 30.0 };
         let coeffsFactors = { x: 1.0, y: -1.0, offset: 0.1 };
-        const coeffsLocation = gl.getUniformLocation(program, "uCoeffs");
+        const coeffsLocation = gl.getUniformLocation(pipeline.shaderProgram, "uCoeffs");
         gl.uniform4fv(coeffsLocation, coeffs);
 
         const backgroundColor = [1.0, 0.97, 0.06, 1.0];
-        const backgroundColorLocation = gl.getUniformLocation(program, "uBackgroundColor");
+        const backgroundColorLocation = gl.getUniformLocation(pipeline.shaderProgram, "uBackgroundColor");
         gl.uniform4fv(backgroundColorLocation, backgroundColor);
 
         const sphereColor = [0.06, 0.92, 1.0];
-        const sphereColorLocation = gl.getUniformLocation(program, "uSphereColor");
+        const sphereColorLocation = gl.getUniformLocation(pipeline.shaderProgram, "uSphereColor");
         gl.uniform3fv(sphereColorLocation, sphereColor);
 
         function step() {
@@ -162,7 +155,7 @@
         }
 
         window.addEventListener('resize', () => {
-            onResize(gl, canvas, vertexBuffer);
+            onResize(gl, canvas, pipeline.vertexBuffer);
         }, false);
         window.requestAnimationFrame(() => render(step));
     </script>
