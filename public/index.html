@@ -66,6 +66,7 @@
         out vec4 fragColor;
 
         uniform vec3 uLightPosition;
+        uniform vec4 uCoeffs;
 
         float distance_from_sphere(in vec3 p, in vec3 c, in float r)
         {
@@ -74,7 +75,7 @@
 
         float map_the_world(in vec3 p)
         {
-            float displacement = sin(5.0 * p.x) * sin(5.0 * p.y) * sin(5.0 * p.z) * 0.25;
+            float displacement = sin(uCoeffs.x * p.x) * sin(uCoeffs.y * p.y) * sin(uCoeffs.z * p.z) * uCoeffs.w;
             float sphere = distance_from_sphere(p, vec3(0.0), 1.0);
             return sphere + displacement;
         }
@@ -205,6 +206,10 @@
         const lightPositionLocation = gl.getUniformLocation(program, "uLightPosition");
         gl.uniform3fv(lightPositionLocation, [lightPosition.x, lightPosition.y, lightPosition.z]);
 
+        let coeffs = [5.0, 5.0, 5.0, 0.25];
+        const coeffsLocation = gl.getUniformLocation(program, "uCoeffs");
+        gl.uniform4fv(coeffsLocation, coeffs);
+
         function render() {
             gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -214,6 +219,10 @@
 
             radians += radiansOffset;
             radians %= 2.0 * Math.PI;
+
+            coeffs[0] += 0.1;
+            coeffs[1] -= 0.1;
+            gl.uniform4fv(coeffsLocation, coeffs);
 
             gl.drawArrays(gl.TRIANGLES, 0, 6);
             window.requestAnimationFrame(render);
