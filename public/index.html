@@ -128,13 +128,23 @@
         }
         `;
 
-        function createWebGL2Context(id, options) {
+        function createWebGL2Context(id, options, onError) {
             const canvas = document.getElementById(id);
 
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            return canvas.getContext('webgl2', options);
+            const gl = canvas.getContext('webgl2', options);
+
+            if (!gl) {
+                onError("WebGL 2 is not available!");
+                canvas.parentElement.innerHTML = "This example requires WebGL 2 which is unavailable on this device.";
+            } else {
+                gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+                gl.clearColor(0, 0, 0, 1);
+            }
+
+            return gl;
         }
 
         function createPipeline(gl, vertexShaderSource, fragmentShaderSource, onError) {
@@ -178,15 +188,7 @@
             return vertexBuffer;
         }
 
-        const gl = createWebGL2Context('webgl2_surface', { antialias: true });
-
-        if (!gl) {
-            console.error("WebGL 2 is not available!");
-            document.body.innerHTML = "This example requires WebGL 2 which is unavailable on this device.";
-        }
-
-        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-        gl.clearColor(0, 0, 0, 1);
+        const gl = createWebGL2Context('webgl2_surface', { antialias: true }, console.error);
 
         const program = createPipeline(gl, vertexShader, fragmentShader, console.error);
         gl.useProgram(program);
