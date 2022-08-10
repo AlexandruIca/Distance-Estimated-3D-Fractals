@@ -67,6 +67,8 @@
 
         uniform vec3 uLightPosition;
         uniform vec4 uCoeffs;
+        uniform vec4 uBackgroundColor;
+        uniform vec3 uSphereColor;
 
         float distance_from_sphere(in vec3 p, in vec3 c, in float r)
         {
@@ -76,7 +78,7 @@
         float map_the_world(in vec3 p)
         {
             float displacement = sin(uCoeffs.x * p.x) * sin(uCoeffs.y * p.y) * sin(uCoeffs.z * p.z) * uCoeffs.w;
-            float sphere = distance_from_sphere(p, vec3(0.0), 1.0);
+            float sphere = distance_from_sphere(p, vec3(0.0), 2.0);
             return sphere + displacement;
         }
 
@@ -108,7 +110,7 @@
                     vec3 normal = compute_normal(current_position);
                     vec3 light_direction = normalize(current_position - uLightPosition);
                     float diffuse_intensity = max(0.0, dot(normal, light_direction));
-                    return vec4(vec3(1.0, 0.0, 0.0) * diffuse_intensity, distance_to_closest * 1000.0);
+                    return vec4(uSphereColor * diffuse_intensity, distance_to_closest * 1000.0);
                 }
 
                 if (total_distance_travelled > MAXIMUM_TRACE_DISTANCE) {
@@ -118,7 +120,7 @@
                 total_distance_travelled += distance_to_closest;
             }
 
-            return vec4(0.0);
+            return uBackgroundColor;
         }
 
         void main()
@@ -211,6 +213,14 @@
         let coeffsFactors = { x: 1.0, y: -1.0, offset: 0.1 };
         const coeffsLocation = gl.getUniformLocation(program, "uCoeffs");
         gl.uniform4fv(coeffsLocation, coeffs);
+
+        const backgroundColor = [1.0, 0.97, 0.06, 1.0];
+        const backgroundColorLocation = gl.getUniformLocation(program, "uBackgroundColor");
+        gl.uniform4fv(backgroundColorLocation, backgroundColor);
+
+        const sphereColor = [0.06, 0.92, 1.0];
+        const sphereColorLocation = gl.getUniformLocation(program, "uSphereColor");
+        gl.uniform3fv(sphereColorLocation, sphereColor);
 
         function render() {
             gl.clear(gl.COLOR_BUFFER_BIT);
