@@ -128,11 +128,16 @@
         }
         `;
 
-        const canvas = document.getElementById('webgl2_surface');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        function createWebGL2Context(id, options) {
+            const canvas = document.getElementById(id);
 
-        const gl = canvas.getContext('webgl2', { antialias: true });
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            return canvas.getContext('webgl2', options);
+        }
+
+        const gl = createWebGL2Context('webgl2_surface', { antialias: true });
 
         if (!gl) {
             console.error("WebGL 2 is not available!");
