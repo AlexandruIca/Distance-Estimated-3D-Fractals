@@ -36,25 +36,16 @@
 <body>
     <canvas id="webgl2_surface"></canvas>
     <script>
-        const vertices = new Float32Array([
-            -1.0, 1.0, 0.0, // top left
-            -1.0, -1.0, 0.0, // bottom left
-            1.0, -1.0, 0.0, // bottom right
-            1.0, -1.0, 0.0, // bottom right
-            1.0, 1.0, 0.0, // top right
-            -1.0, 1.0, 0.0 // top left
-        ]);
-
         const vertexShader = `
         #version 300 es
 
-        in vec3 position;
-        out vec3 vPosition;
+        in vec4 position;
+        out vec2 vPosition;
         
         void main()
         {
-            vPosition = position;
-            gl_Position = vec4(position, 1.0);
+            vPosition = position.zw;
+            gl_Position = vec4(position.xy, 0.0, 1.0);
         }
         `;
 
@@ -62,7 +53,7 @@
         #version 300 es
         precision highp float;
 
-        in vec3 vPosition;
+        in vec2 vPosition;
         out vec4 fragColor;
 
         uniform vec3 uLightPosition;
@@ -78,7 +69,7 @@
         float map_the_world(in vec3 p)
         {
             float displacement = sin(uCoeffs.x * p.x) * sin(uCoeffs.y * p.y) * sin(uCoeffs.z * p.z) * uCoeffs.w;
-            float sphere = distance_from_sphere(p, vec3(0.0), 2.0);
+            float sphere = distance_from_sphere(p, vec3(0.0), 3.0);
             return sphere + displacement;
         }
 
@@ -127,7 +118,7 @@
         {
             vec3 camera_position = vec3(0.0, 0.0, -5.0);
             vec3 ray_origin = camera_position;
-            vec3 ray_direction = vec3(vPosition.xy, 1.0);
+            vec3 ray_direction = vec3(vPosition, 1.0);
             fragColor = ray_march(ray_origin, ray_direction);
         }
         `;
@@ -149,6 +140,38 @@
             }
 
             return gl;
+        }
+
+        function getScreenRectVertices() {
+            if (window.innerWidth > window.innerHeight) {
+                const base = window.innerHeight;
+                const bigger = window.innerWidth;
+                const scale = bigger / base;
+                const offset = (scale - 1) / 2;
+
+                return new Float32Array([
+                    -1.0, 1.0, -1.0 - offset, 1.0, // top left
+                    -1.0, -1.0, -1.0 - offset, -1.0, // bottom left
+                    1.0, -1.0, 1.0 + offset, -1.0, // bottom right
+                    1.0, -1.0, 1.0 + offset, -1.0, // bottom right
+                    1.0, 1.0, 1.0 + offset, 1.0, // top right
+                    -1.0, 1.0, -1.0 - offset, 1.0 // top left
+                ]);
+            } else {
+                const base = window.innerWidth;
+                const bigger = window.innerHeight;
+                const scale = bigger / base;
+                const offset = (scale - 1) / 2;
+
+                return new Float32Array([
+                    -1.0, 1.0, -1.0, 1.0 + offset, // top left
+                    -1.0, -1.0, -1.0, -1.0 - offset, // bottom left
+                    1.0, -1.0, 1.0, -1.0 - offset, // bottom right
+                    1.0, -1.0, 1.0, -1.0 - offset, // bottom right
+                    1.0, 1.0, 1.0, 1.0 + offset, // top right
+                    -1.0, 1.0, -1.0, 1.0 + offset // top left
+                ]);
+            }
         }
 
         function createPipeline(gl, vertexShaderSource, fragmentShaderSource, onError) {
@@ -186,7 +209,7 @@
             const positionCoord = gl.getAttribLocation(program, "position");
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-            gl.vertexAttribPointer(positionCoord, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(positionCoord, 4, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(positionCoord);
 
             return vertexBuffer;
@@ -200,7 +223,7 @@
         const screenArray = gl.createVertexArray();
         gl.bindVertexArray(screenArray);
 
-        const vertexBuffer = createAndBindVertexBuffer(gl, program, vertices);
+        const vertexBuffer = createAndBindVertexBuffer(gl, program, getScreenRectVertices());
 
         let lightPosition = [0.0, 0.0, 5.0];
         let radians = 0.0;
