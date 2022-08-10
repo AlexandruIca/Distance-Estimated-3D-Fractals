@@ -111,7 +111,8 @@
         }
         `;
 
-        const gl = createWebGL2Context('webgl2_surface', { antialias: true }, console.error);
+        const canvas = document.getElementById('webgl2_surface');
+        const gl = createWebGL2Context(canvas, { antialias: true }, console.error);
 
         const program = createPipeline(gl, defaultVertexShader, fragmentShader, console.error);
         gl.useProgram(program);
@@ -160,6 +161,9 @@
             gl.uniform4fv(coeffsLocation, coeffs);
         }
 
+        window.addEventListener('resize', () => {
+            onResize(gl, canvas, vertexBuffer);
+        }, false);
         window.requestAnimationFrame(() => render(step));
     </script>
 </body>

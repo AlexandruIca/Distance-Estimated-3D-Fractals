@@ -11,9 +11,7 @@ void main()
 }
 `;
 
-function createWebGL2Context(id, options, onError) {
-    const canvas = document.getElementById(id);
-
+function createWebGL2Context(canvas, options, onError) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -60,6 +58,16 @@ function getScreenRectVertices() {
             -1.0, 1.0, -1.0, 1.0 + offset // top left
         ]);
     }
+}
+
+function onResize(gl, canvas, vertexBuffer) {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+    const newScreenRect = getScreenRectVertices();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, newScreenRect, 0, newScreenRect.length);
 }
 
 function createPipeline(gl, vertexShaderSource, fragmentShaderSource, onError) {
