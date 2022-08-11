@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Distorted 3D Sphere</title>
+
+    <meta name="description" content="An SDFed sphere with distortion applied to it.">
+    <meta property="og:title" content="Distorted 3D Sphere">
+    <meta property="og:description" content="An SDFed sphere with distortion applied to it.">
+    <meta property="og:type" content="website">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            background-color: black;
+        }
+
+        canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="webgl2_surface"></canvas>
+    <script src="common.js"></script>
+    <script>
+        const fragmentShader = `
+        #version 300 es
+        precision highp float;
+
+        in vec2 vPosition;
+        out vec4 fragColor;
+
+        uniform vec3 uLightPosition;
+        uniform vec4 uCoeffs;
+        uniform vec4 uBackgroundColor;
+        uniform vec3 uSphereColor;
+        uniform vec3 uTranslation;
+
+        float distance_from_sphere(in vec3 p, in vec3 c, in float r)
+        {
+            return length(p - c) - r;
+        }
+
+        float map_the_world(in vec3 p)
+        {
+            float displacement = sin(uCoeffs.x * p.x) * sin(uCoeffs.y * p.y) * sin(uCoeffs.z * p.z) * uCoeffs.w;
+            float sphere = distance_from_sphere(p, vec3(0.0), 3.0);
+            return sphere + displacement;
+        }
+
+        vec3 compute_normal(in vec3 p)
+        {
+            const vec3 small_step = vec3(0.001, 0.0, 0.0);
+
+            float gradient_x = map_the_world(p + small_step.xyy) - map_the_world(p - small_step.xyy);
+            float gradient_y = map_the_world(p + small_step.yxy) - map_the_world(p - small_step.yxy);
+            float gradient_z = map_the_world(p + small_step.yyx) - map_the_world(p - small_step.yyx);
+
+            vec3 normal = vec3(gradient_x, gradient_y, gradient_z);
+
+            return normalize(normal);
+        }
+
+        vec4 ray_march(in vec3 ray_origin, in vec3 ray_direction)
+        {
+            float total_distance_travelled = 0.0;
+            const int NUMBER_OF_STEPS = 32;
+            const float MINIMUM_HIT_DISTANCE = 0.001;
+            const float MAXIMUM_TRACE_DISTANCE = 1000.0;
+
+            const vec3 light_color = vec3(1.0, 1.0, 0.0);
+            const float ambient_strength = 0.05;
+            const vec3 ambient = ambient_strength * light_color;
+            const float specular_strength = 1.0;
+
+            for (int i = 0; i < NUMBER_OF_STEPS; ++i) {
+                vec3 current_position = ray_origin + total_distance_travelled * ray_direction;
+                float distance_to_closest = map_the_world(current_position);
+
+                if (distance_to_closest < MINIMUM_HIT_DISTANCE) {
+                    vec3 normal = compute_normal(current_position);
+                    vec3 light_direction = normalize(current_position - uLightPosition);
+                    float diffuse_intensity = max(0.0, dot(normal, light_direction));
+                    vec3 diffuse = uSphereColor * diffuse_intensity;
+
+                    vec3 view_dir = normalize(current_position - ray_origin);
+                    vec3 reflect_dir = reflect(-light_direction, normal);
+                    float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
+                    vec3 specular = specular_strength * spec * light_color;
+                    vec3 result = (ambient + diffuse + specular) * uSphereColor;
+
+                    return vec4(result, distance_to_closest * 1000.0);
+                }
+
+                if (total_distance_travelled > MAXIMUM_TRACE_DISTANCE) {
+                    break;
+                }
+
+                total_distance_travelled += distance_to_closest;
+            }
+
+            return uBackgroundColor;
+        }
+
+        void main()
+        {
+            vec3 camera_position = vec3(0.0, 0.0, -5.0) + uTranslation;
+            vec3 ray_origin = camera_position;
+            vec3 ray_direction = vec3(vPosition + uTranslation.xy, 1.0);
+            fragColor = ray_march(ray_origin, ray_direction);
+        }
+        `;
+
+        const canvas = document.getElementById('webgl2_surface');
+        const gl = createWebGL2Context(canvas, { antialias: true }, console.error);
+        const pipeline = createPipeline(gl, defaultVertexShader, fragmentShader, console.error);
+
+        let lightPosition = [0.0, 0.0, 5.0];
+        let radians = 0.0;
+        const radiansOffset = 0.05;
+
+        let cameraTranslation = [0.0, 0.0, 0.0];
+
+        let coeffs = [5.0, 5.0, 5.0, 0.25];
+        const coeffsLimits = { lower: -30.0, upper: 30.0 };
+        let coeffsFactors = { x: 1.0, y: -1.0, offset: 0.1 };
+
+        const backgroundColor = [1.0, 0.97, 0.06, 1.0];
+        const sphereColor = [0.06, 0.92, 1.0];
+
+        const setSphereColor = bindUniform3fv(pipeline, "uSphereColor", sphereColor);
+        const setLightPosition = bindUniform3fv(pipeline, "uLightPosition", lightPosition);
+        const setCoeffs = bindUniform4fv(pipeline, "uCoeffs", coeffs);
+        const setBackgroundColor = bindUniform4fv(pipeline, "uBackgroundColor", backgroundColor);
+        const setCameraTranslation = bindUniform3fv(pipeline, "uTranslation", cameraTranslation);
+
+        function step() {
+            lightPosition[0] = 10.0 * Math.cos(radians);
+            lightPosition[1] = 10.0 * Math.sin(radians);
+            setLightPosition(lightPosition);
+
+            radians += radiansOffset;
+            radians %= 2.0 * Math.PI;
+
+            coeffs[0] += coeffsFactors.offset * coeffsFactors.x;
+            coeffs[1] -= coeffsFactors.offset * coeffsFactors.y;
+            if (coeffs[0] < coeffsLimits.lower || coeffs[0] > coeffsLimits.upper) {
+                coeffsFactors.x *= -1.0;
+            }
+            if (coeffs[1] < coeffsLimits.lower || coeffs[1] > coeffsLimits.upper) {
+                coeffsFactors.y *= -1.0;
+            }
+            setCoeffs(coeffs);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.keyCode == 37) { // arrow key (left)
+                cameraTranslation[0] -= 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 39) { // arrow key (right)
+                cameraTranslation[0] += 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 38) { // arrow key (up)
+                cameraTranslation[1] += 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 40) { // arrow key (down)
+                cameraTranslation[1] -= 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 87) { // 'w'
+                cameraTranslation[2] += 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 83) { // 's'
+                cameraTranslation[2] -= 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 74) { // 'j'
+                lightPosition[2] += 0.5;
+                setLightPosition(lightPosition);
+            } else if (event.keyCode == 75) { // 'k'
+                lightPosition[2] -= 0.5;
+                setLightPosition(lightPosition);
+            }
+        });
+        window.addEventListener('resize', () => {
+            onResize(gl, canvas, pipeline.vertexBuffer);
+        }, false);
+        window.requestAnimationFrame(() => render(step));
+    </script>
+</body>
+
+</html>
