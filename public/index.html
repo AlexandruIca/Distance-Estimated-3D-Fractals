@@ -186,6 +186,12 @@
             } else if (event.keyCode == 83) { // 's'
                 cameraTranslation[2] -= 0.5;
                 setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 74) { // 'j'
+                lightPosition[2] += 0.5;
+                setLightPosition(lightPosition);
+            } else if (event.keyCode == 75) { // 'k'
+                lightPosition[2] -= 0.5;
+                setLightPosition(lightPosition);
             }
         });
         window.addEventListener('resize', () => {
