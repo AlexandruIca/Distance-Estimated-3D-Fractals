@@ -157,3 +157,14 @@ function bindUniform4fv(pipeline, name, value) {
     pipeline.gl.uniform4fv(location, value);
     return (newValue) => pipeline.gl.uniform4fv(location, newValue);
 }
+
+const keyCodes = {
+    LEFT_ARROW: 37,
+    UP_ARROW: 38,
+    RIGHT_ARROW: 39,
+    DOWN_ARROW: 40,
+    LETTER_J: 74,
+    LETTER_K: 75,
+    LETTER_S: 83,
+    LETTER_W: 87,
+};
