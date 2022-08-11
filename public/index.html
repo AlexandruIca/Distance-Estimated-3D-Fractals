@@ -48,6 +48,7 @@
         uniform vec4 uCoeffs;
         uniform vec4 uBackgroundColor;
         uniform vec3 uSphereColor;
+        uniform vec3 uTranslation;
 
         float distance_from_sphere(in vec3 p, in vec3 c, in float r)
         {
@@ -117,9 +118,9 @@
 
         void main()
         {
-            vec3 camera_position = vec3(0.0, 0.0, -5.0);
+            vec3 camera_position = vec3(0.0, 0.0, -5.0) + uTranslation;
             vec3 ray_origin = camera_position;
-            vec3 ray_direction = vec3(vPosition, 1.0);
+            vec3 ray_direction = vec3(vPosition + uTranslation.xy, 1.0);
             fragColor = ray_march(ray_origin, ray_direction);
         }
         `;
@@ -132,6 +133,8 @@
         let radians = 0.0;
         const radiansOffset = 0.05;
 
+        let cameraTranslation = [0.0, 0.0, 0.0];
+
         let coeffs = [5.0, 5.0, 5.0, 0.25];
         const coeffsLimits = { lower: -30.0, upper: 30.0 };
         let coeffsFactors = { x: 1.0, y: -1.0, offset: 0.1 };
@@ -143,6 +146,7 @@
         const setLightPosition = bindUniform3fv(pipeline, "uLightPosition", lightPosition);
         const setCoeffs = bindUniform4fv(pipeline, "uCoeffs", coeffs);
         const setBackgroundColor = bindUniform4fv(pipeline, "uBackgroundColor", backgroundColor);
+        const setCameraTranslation = bindUniform3fv(pipeline, "uTranslation", cameraTranslation);
 
         function step() {
             lightPosition[0] = 10.0 * Math.cos(radians);
@@ -163,6 +167,27 @@
             setCoeffs(coeffs);
         }
 
+        document.addEventListener('keydown', (event) => {
+            if (event.keyCode == 37) { // arrow key (left)
+                cameraTranslation[0] -= 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 39) { // arrow key (right)
+                cameraTranslation[0] += 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 38) { // arrow key (up)
+                cameraTranslation[1] += 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 40) { // arrow key (down)
+                cameraTranslation[1] -= 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 87) { // 'w'
+                cameraTranslation[2] += 0.5;
+                setCameraTranslation(cameraTranslation);
+            } else if (event.keyCode == 83) { // 's'
+                cameraTranslation[2] -= 0.5;
+                setCameraTranslation(cameraTranslation);
+            }
+        });
         window.addEventListener('resize', () => {
             onResize(gl, canvas, pipeline.vertexBuffer);
         }, false);
