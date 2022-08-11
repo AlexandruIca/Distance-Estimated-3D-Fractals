@@ -167,30 +167,32 @@
             setCoeffs(coeffs);
         }
 
+        const cameraOffset = 0.1;
+
         document.addEventListener('keydown', (event) => {
             if (event.keyCode == keyCodes.LEFT_ARROW) {
-                cameraTranslation[0] -= 0.5;
+                cameraTranslation[0] -= cameraOffset;
                 setCameraTranslation(cameraTranslation);
             } else if (event.keyCode == keyCodes.RIGHT_ARROW) {
-                cameraTranslation[0] += 0.5;
+                cameraTranslation[0] += cameraOffset;
                 setCameraTranslation(cameraTranslation);
             } else if (event.keyCode == keyCodes.UP_ARROW) {
-                cameraTranslation[1] += 0.5;
+                cameraTranslation[1] += cameraOffset;
                 setCameraTranslation(cameraTranslation);
             } else if (event.keyCode == keyCodes.DOWN_ARROW) {
-                cameraTranslation[1] -= 0.5;
+                cameraTranslation[1] -= cameraOffset;
                 setCameraTranslation(cameraTranslation);
             } else if (event.keyCode == keyCodes.LETTER_W) {
-                cameraTranslation[2] += 0.5;
+                cameraTranslation[2] += cameraOffset;
                 setCameraTranslation(cameraTranslation);
             } else if (event.keyCode == keyCodes.LETTER_S) {
-                cameraTranslation[2] -= 0.5;
+                cameraTranslation[2] -= cameraOffset;
                 setCameraTranslation(cameraTranslation);
             } else if (event.keyCode == keyCodes.LETTER_J) {
-                lightPosition[2] += 0.5;
+                lightPosition[2] += cameraOffset;
                 setLightPosition(lightPosition);
             } else if (event.keyCode == keyCodes.LETTER_K) {
-                lightPosition[2] -= 0.5;
+                lightPosition[2] -= cameraOffset;
                 setLightPosition(lightPosition);
             }
         });
