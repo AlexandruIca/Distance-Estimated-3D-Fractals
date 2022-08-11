@@ -140,6 +140,12 @@ function render(callback) {
     window.requestAnimationFrame(() => render(callback));
 }
 
+function bindUniformf(pipeline, name, value) {
+    const location = gl.getUniformLocation(pipeline.shaderProgram, name);
+    pipeline.gl.uniform1f(location, value);
+    return (newValue) => pipeline.gl.uniform1f(location, newValue);
+}
+
 function bindUniform3fv(pipeline, name, value) {
     const location = gl.getUniformLocation(pipeline.shaderProgram, name);
     pipeline.gl.uniform3fv(location, value);
