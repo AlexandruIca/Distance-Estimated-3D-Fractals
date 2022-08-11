@@ -45,7 +45,6 @@
         out vec4 fragColor;
 
         uniform vec3 uLightPosition;
-        uniform vec4 uCoeffs;
         uniform vec4 uBackgroundColor;
         uniform vec3 uShapeColor;
         uniform vec3 uLightColor;
@@ -141,9 +140,6 @@
 
         let cameraTranslation = [0.0, 0.0, -15.0];
         const lightRadius = 7.0;
-        let coeffs = [5.0, 5.0, 5.0, 0.25];
-        const coeffsLimits = { lower: -30.0, upper: 30.0 };
-        let coeffsFactors = { x: 1.0, y: -1.0, offset: 0.1 };
 
         const backgroundColor = [1.0, 1.0, 1.0, 1.0];
         const shapeColor = [1.0, 0.4, 0.63];
@@ -160,7 +156,6 @@
         const setDiffuse = bindUniform3fv(pipeline, "uDiffuse", diffuse);
         const setSpecular = bindUniform3fv(pipeline, "uSpecular", specular);
         const setShininess = bindUniformf(pipeline, "uShininess", shininess);
-        const setCoeffs = bindUniform4fv(pipeline, "uCoeffs", coeffs);
         const setBackgroundColor = bindUniform4fv(pipeline, "uBackgroundColor", backgroundColor);
         const setCameraTranslation = bindUniform3fv(pipeline, "uTranslation", cameraTranslation);
 
@@ -171,16 +166,6 @@
 
             radians += radiansOffset;
             radians %= 2.0 * Math.PI;
-
-            coeffs[0] += coeffsFactors.offset * coeffsFactors.x;
-            coeffs[1] -= coeffsFactors.offset * coeffsFactors.y;
-            if (coeffs[0] < coeffsLimits.lower || coeffs[0] > coeffsLimits.upper) {
-                coeffsFactors.x *= -1.0;
-            }
-            if (coeffs[1] < coeffsLimits.lower || coeffs[1] > coeffsLimits.upper) {
-                coeffsFactors.y *= -1.0;
-            }
-            setCoeffs(coeffs);
         }
 
         const cameraOffset = 0.1;
