@@ -62,6 +62,10 @@
         }
 
         a {
+            color: var(--text-color);
+        }
+
+        #demos a {
             text-decoration: none;
             color: var(--highlight-text-color);
             text-align: center;
@@ -80,13 +84,14 @@
         .image {
             display: flex;
             flex-flow: column nowrap;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             background-color: var(--highlight-color);
             border-color: var(--highlight-color);
             border-radius: 0.3rem;
             margin: 0.5rem 0.5rem 0.5rem 0.5rem;
-            max-width: 20ch;
+            width: 17ch;
+            height: 20ch;
         }
 
         img {
@@ -100,8 +105,9 @@
     <article>
         <h2>Distance-Estimated 3D Fractals</h2>
 
-        <p>Currently there is only one exemple with a distorted sphere. More to come.
-            You can interactively play with the demo: press the arrow keys and 'w'/'s' to move the camera around,
+        <p>Examples have their distance functions taken from <a href="https://jbaker.graphics/writings/DEC.html">The
+                Distance Estimator Compendium</a>.
+            You can interactively play with the demos: press the arrow keys and 'w'/'s' to move the camera around,
             and
             'j'/'k'
             to move the light.</p>
@@ -110,6 +116,10 @@
         <div class="image">
             <img src="DistortedSphere.png" alt="A distorted SDFed sphere.">
             <a href="distorted_sphere.html">Distorted Sphere</a>
+        </div>
+        <div class="image">
+            <img src="WeirdFractal.png" alt="A weird fractal.">
+            <a href="weird_shape.html">Some weird fractal</a>
         </div>
     </div>
 </body>
