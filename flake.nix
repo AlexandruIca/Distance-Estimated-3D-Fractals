@@ -1,38 +1,30 @@
 {
-  description = "Rust environment";
+  description = "C environment";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
-    flake-utils.url = "github:numtide/flake-utils";
-  };
+  inputs.nixpkgs.url = "nixpkgs/nixos-22.05";
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs = { self, nixpkgs }:
     let
-      pkgs = import nixpkgs { inherit system; };
-    in with pkgs; rec {
-      devShell = mkShell rec {
-        buildInputs = [
-          rustc
-          cargo
-          rustfmt
-          clippy
-          rust-analyzer
-
-          libxkbcommon
-          libGL
-
-          # WINIT_UNIX_BACKEND=x11
-          xorg.libxcb
-          xorg.libXcursor
-          xorg.libXrandr
-          xorg.libXi
-          xorg.libX11
-        ];
-        LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
-          shellHook = ''
-            export PS1="$PS1\[\033[38;2;211;134;155m\]:nix:\[\033[0m\] "
-          '';
-      };
-    });
+      supportedSystems = ["x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin"];
+      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
+    in {
+        devShells = forAllSystems (system:
+          let
+            pkgs = nixpkgsFor.${system};
+          in {
+            default = pkgs.mkShell {
+              buildInputs = with pkgs; [
+                gcc
+                clang-tools
+                cmake
+                ninja
+                ccache
+              ];
+              shellHook = ''
+                export PS1="$PS1 nix> "
+              '';
+            };
+          });
+    };
 }
