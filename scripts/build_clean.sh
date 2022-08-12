@@ -1,8 +1,4 @@
 #!/usr/bin/env sh
 
-pushd build
-
-rm -rf src/ CMakeFiles/
-rm CMakeCache.txt .ninja* *.ninja cmake* compile_commands.json
-
-popd
+rm -rf build/src/ build/CMakeFiles/
+rm build/CMakeCache.txt build/.ninja* build/*.ninja build/cmake* build/compile_commands.json

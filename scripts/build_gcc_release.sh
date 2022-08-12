@@ -4,8 +4,8 @@ CC=gcc cmake -Bbuild -G"Ninja" -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     .
 
-pushd build/
+cd build/
 
 cmake --build .
 
-popd
+cd ..
