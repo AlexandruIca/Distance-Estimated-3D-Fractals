@@ -10,8 +10,6 @@ function(set_project_warnings project_name)
         -Wextra
         -Wshadow
         -Wunused
-        -Wpedantic
-        -Wconversion
         -Wsign-conversion
         -Wnull-dereference
     )
